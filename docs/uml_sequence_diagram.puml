@@ -1,0 +1,58 @@
+@startuml TriageAI_Sequence_Diagram
+
+skinparam monochrome true
+skinparam shadowing false
+
+actor Clinician
+participant "React Frontend" as FE
+participant "Flask API" as API
+participant "Auth Middleware" as Auth
+participant "ML Pipeline" as ML
+participant "Feature Contract" as FC
+participant "SHAP Explainer" as SHAP
+participant "SQLite DB" as DB
+
+== Authentication ==
+Clinician -> FE: Enter credentials
+FE -> API: POST /api/auth/login
+API -> Auth: Validate credentials + rate limit check
+Auth -> DB: Query user hash
+DB --> Auth: Return hash
+Auth --> API: Issue JWT tokens
+API --> FE: access_token + refresh_token
+
+== Triage Assessment ==
+Clinician -> FE: Enter patient vitals
+FE -> FE: Validate clinical ranges
+FE -> API: POST /api/predict (patient_data + vitals)
+API -> Auth: Verify clinician role
+Auth --> API: Valid token
+API -> FC: build_feature_vector(patient, vitals)
+FC --> API: 13-element vector + contract_hash
+API -> ML: predict(vector)
+ML -> ML: XGBoost inference
+ML --> API: ESI level + probabilities
+API -> SHAP: explain(vector, prediction)
+SHAP --> API: Top-3 feature impacts
+API -> DB: INSERT Patient + Vitals
+API -> DB: INSERT TriageAssessment
+API -> DB: INSERT AuditLog (ai_prediction)
+API --> FE: assessment_id + ESI + SHAP + confidence
+
+== Clinician Confirmation ==
+Clinician -> FE: Review AI recommendation
+alt Clinician Agrees
+    FE -> API: POST /api/confirm/{id}
+    API -> Auth: Verify clinician
+    API -> DB: UPDATE clinician_priority = ai_priority
+    API -> DB: INSERT AuditLog (clinician_confirm)
+    API --> FE: Confirm success
+else Clinician Overrides
+    FE -> API: POST /api/override/{id} (new_level + reason_code)
+    API -> Auth: Verify clinician
+    API -> DB: UPDATE clinician_priority + is_override + reason
+    API -> DB: INSERT AuditLog (clinician_override)
+    API --> FE: Override success
+end
+
+@enduml

@@ -1,0 +1,66 @@
+{
+  "app": {
+    "name": "TriageAI",
+    "tagline": "Clinical Decision Support System for Emergency Department Patient Triage",
+    "disclaimer": "Advisory Only: This system provides decision-support recommendations. All clinical decisions require clinician confirmation before action."
+  },
+  "esi": {
+    "1": { "label": "Immediate", "description": "Life-threatening condition requiring immediate intervention" },
+    "2": { "label": "Emergent", "description": "High-risk condition; potential threat to life or function" },
+    "3": { "label": "Urgent", "description": "Moderate-risk condition requiring timely assessment" },
+    "4": { "label": "Less Urgent", "description": "Low-risk condition; assessment can be delayed" },
+    "5": { "label": "Non-Urgent", "description": "Minimal-risk condition; routine assessment appropriate" }
+  },
+  "vitals": {
+    "heart_rate": "Heart Rate (bpm)",
+    "sbp": "Systolic Blood Pressure (mmHg)",
+    "dbp": "Diastolic Blood Pressure (mmHg)",
+    "respiratory_rate": "Respiratory Rate (breaths/min)",
+    "spo2": "Oxygen Saturation (%)",
+    "temperature": "Body Temperature (\u00b0C)",
+    "gcs": "Glasgow Coma Scale (3\u201315)",
+    "pain_score": "Pain Score (0\u201310)"
+  },
+  "chief_complaints": {
+    "chest_pain": "Chest Pain",
+    "shortness_of_breath": "Shortness of Breath",
+    "abdominal_pain": "Abdominal Pain",
+    "headache": "Headache",
+    "fever": "Fever",
+    "trauma_injury": "Trauma / Injury",
+    "dizziness_syncope": "Dizziness / Syncope",
+    "weakness_numbness": "Weakness / Numbness",
+    "back_pain": "Back Pain",
+    "altered_mental_status": "Altered Mental Status",
+    "seizure": "Seizure",
+    "allergic_reaction": "Allergic Reaction",
+    "other": "Other"
+  },
+  "override_reasons": {
+    "clinical_instinct": "Clinical instinct based on patient presentation",
+    "additional_history": "Additional history not captured in vitals",
+    "known_patient": "Known patient with relevant medical history",
+    "rapid_deterioration": "Patient showing signs of rapid deterioration",
+    "communication_barrier": "Communication barrier affecting assessment",
+    "equipment_concern": "Concern about vital sign measurement accuracy",
+    "other": "Other (specify in notes)"
+  },
+  "messages": {
+    "login_success": "Login successful",
+    "login_failed": "Invalid credentials",
+    "prediction_success": "Triage assessment generated successfully",
+    "confirm_success": "Assessment confirmed",
+    "override_success": "Assessment overridden",
+    "unauthorized": "Unauthorized access",
+    "model_not_loaded": "ML model not available. Contact administrator."
+  },
+  "audit_events": {
+    "ai_prediction": "AI Prediction Generated",
+    "clinician_confirm": "Clinician Confirmed AI Recommendation",
+    "clinician_override": "Clinician Overrode AI Recommendation",
+    "user_login": "User Login",
+    "user_logout": "User Logout",
+    "user_created": "User Account Created",
+    "user_deactivated": "User Account Deactivated"
+  }
+}

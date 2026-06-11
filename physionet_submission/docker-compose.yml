@@ -1,0 +1,62 @@
+version: '3.8'
+
+services:
+  # PostgreSQL Database
+  postgres:
+    image: postgres:15
+    container_name: triageai-postgres
+    environment:
+      POSTGRES_DB: triageai
+      POSTGRES_USER: triageai_user
+      POSTGRES_PASSWORD: triageai_password
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    networks:
+      - triageai-network
+    restart: unless-stopped
+
+  # Flask Backend API
+  flask-api:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: triageai-api
+    environment:
+      FLASK_ENV: production
+      DATABASE_URL: postgresql://triageai_user:triageai_password@postgres:5432/triageai
+      JWT_SECRET_KEY: ${JWT_SECRET_KEY:-change-this-in-production-64-chars-minimum}
+      CORS_ORIGINS: http://localhost:3000
+    ports:
+      - "5000:5000"
+    depends_on:
+      - postgres
+    volumes:
+      - ./backend:/app
+    networks:
+      - triageai-network
+    restart: unless-stopped
+
+  # React Frontend
+  react-frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    container_name: triageai-frontend
+    ports:
+      - "3000:3000"
+    depends_on:
+      - flask-api
+    environment:
+      REACT_APP_API_URL: http://localhost:5000
+    networks:
+      - triageai-network
+    restart: unless-stopped
+
+volumes:
+  postgres_data:
+
+networks:
+  triageai-network:
+    driver: bridge

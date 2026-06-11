@@ -1,0 +1,53 @@
+@startuml TriageAI_Use_Case_Diagram
+
+skinparam monochrome true
+skinparam shadowing false
+
+left to right direction
+
+actor "Clinician" as Clinician
+actor "System Admin" as Admin
+actor "ML Model" as ML
+
+rectangle "TriageAI System" {
+    usecase "Login with JWT" as UC1
+    usecase "Enter Patient Vitals" as UC2
+    usecase "AI Triage Prediction" as UC3
+    usecase "View SHAP Explanation" as UC4
+    usecase "Confirm AI Recommendation" as UC5
+    usecase "Override AI Recommendation" as UC6
+    usecase "View Patient Queue" as UC7
+    usecase "Search Patient History" as UC8
+    usecase "Export Audit Log (CSV)" as UC9
+    usecase "Manage Users (CRUD)" as UC10
+    usecase "View System Analytics" as UC11
+    usecase "Enforce Feature Contract" as UC12
+    usecase "Generate SHAP Values" as UC13
+    usecase "Log Immutable Audit Event" as UC14
+
+    Clinician --> UC1
+    Clinician --> UC2
+    Clinician --> UC3
+    Clinician --> UC4
+    Clinician --> UC5
+    Clinician --> UC6
+    Clinician --> UC7
+    Clinician --> UC8
+
+    Admin --> UC1
+    Admin --> UC9
+    Admin --> UC10
+    Admin --> UC11
+    Admin --> UC8
+
+    UC3 ..> UC12 : <<include>>
+    UC3 ..> UC13 : <<include>>
+    UC3 ..> UC14 : <<include>>
+    UC5 ..> UC14 : <<include>>
+    UC6 ..> UC14 : <<include>>
+
+    ML --> UC3
+    ML --> UC13
+}
+
+@enduml

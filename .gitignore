@@ -1,0 +1,74 @@
+# Python
+__pycache__/
+*.py[cod]
+*.egg-info/
+dist/
+build/
+.eggs/
+*.egg
+venv/
+env/
+.venv/
+triageai_venv/
+
+# ML Artifacts (large files — keep .gitkeep only)
+backend/ml/artifacts/*.joblib
+backend/ml/artifacts/*.json
+backend/ml/artifacts/*.png
+!backend/ml/artifacts/.gitkeep
+
+# Data (large datasets — keep out of VCS)
+*.csv
+*.parquet
+*.rdata
+*.zip
+data/
+triage_data.*
+
+# Environment
+.env
+*.env.local
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# Node
+node_modules/
+frontend/build/
+frontend/.env.local
+
+# OS
+.DS_Store
+Thumbs.db
+~$*
+
+# Docker
+postgres_data/
+
+# Testing
+.coverage
+coverage.xml
+htmlcov/
+.pytest_cache/
+frontend/playwright-report/
+frontend/test-results/
+frontend/blob-report/
+
+# Optimized model exports
+backend/ml/artifacts/*.onnx
+
+# Local SQLite databases & training logs (migrations/ IS tracked)
+*.db
+instance/
+backend/instance/
+*_run.log
+
+# MLflow
+mlruns/
+mlartifacts/
+
+# Jupyter
+.ipynb_checkpoints/

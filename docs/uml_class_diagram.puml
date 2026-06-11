@@ -1,0 +1,101 @@
+@startuml TriageAI_Class_Diagram
+
+skinparam classAttributeIconSize 0
+skinparam monochrome true
+skinparam shadowing false
+
+' ── DATABASE MODELS ──────────────────────────────────────────
+
+class User {
+  +user_id: UUID <<PK>>
+  +username: String <<unique>>
+  +password_hash: String
+  +role: Enum {admin, clinician}
+  +is_active: Boolean
+  +created_at: DateTime
+}
+
+class Patient {
+  +patient_id: UUID <<PK>>
+  +age: Integer
+  +sex: Enum {M, F, O}
+  +chief_complaint: String <<ICD-10>>
+  +pain_score: Integer
+  +medication_flags: JSON
+}
+
+class Vitals {
+  +vitals_id: UUID <<PK>>
+  +patient_id: UUID <<FK>>
+  +heart_rate: Integer
+  +sbp: Integer
+  +dbp: Integer
+  +respiratory_rate: Integer
+  +spo2: Integer
+  +temperature: Float
+  +gcs: Integer
+}
+
+class TriageAssessment {
+  +assessment_id: UUID <<PK>>
+  +patient_id: UUID <<FK>>
+  +clinician_id: UUID <<FK>>
+  +ai_priority: Integer <<ESI 1-5>>
+  +ai_confidence: Float
+  +clinician_priority: Integer <<nullable>>
+  +is_override: Boolean
+  +override_reason: String <<OVR-01..07>>
+  +shap_explanation: JSON
+  +assessed_at: DateTime
+}
+
+class AuditLog {
+  +log_id: UUID <<PK>>
+  +assessment_id: UUID <<FK>>
+  +clinician_id: UUID <<FK>>
+  +event_type: Enum {ai_prediction, clinician_confirm, clinician_override}
+  +event_detail: Text
+  +ip_address: String
+  +timestamp: DateTime
+}
+
+' ── ML MODULES ──────────────────────────────────────────────
+
+class ClinicalStandards {
+  +{static} VITAL_SIGN_STANDARDS: Dict
+  +{static} CHIEF_COMPLAINT_REGISTRY: Dict
+  +{static} OVERRIDE_REASON_CODES: Dict
+  +{static} ESI_LEVELS: Dict
+  +validate_vital_sign(name, value)
+  +get_complaint_index(code)
+  +get_sex_index(code)
+}
+
+class FeatureContract {
+  +{static} EXPECTED_FEATURE_COUNT: 13
+  +{static} FEATURE_NAMES: List<String>
+  +{static} get_contract_hash(): SHA-256
+  +build_feature_vector(patient, vitals): Array
+  +validate_contract_against_model(path)
+}
+
+class TriagePipeline {
+  -pipeline: XGBoostClassifier
+  -label_encoder: LabelEncoder
+  -explainer: TreeExplainer
+  +load(artifacts_dir)
+  +predict(feature_vector): ESI_Level
+  +explain(feature_vector): SHAP_Values
+}
+
+' ── RELATIONSHIPS ───────────────────────────────────────────
+
+User "1" -- "0..*" TriageAssessment : performs >
+Patient "1" -- "0..*" Vitals : has >
+Patient "1" -- "0..*" TriageAssessment : assessed >
+TriageAssessment "1" -- "1..*" AuditLog : logged in >
+TriageAssessment ..> FeatureContract : uses
+TriageAssessment ..> ClinicalStandards : validates
+TriagePipeline ..> FeatureContract : enforces
+
+@enduml

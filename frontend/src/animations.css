@@ -1,0 +1,90 @@
+/* TriageAI Clinical Animations — Purposeful, not decorative */
+
+/* Pulse animation for Level 1 (Immediate) critical alerts */
+@keyframes pulse-critical {
+  0% { box-shadow: 0 0 0 0 rgba(198, 40, 40, 0.6); }
+  70% { box-shadow: 0 0 0 12px rgba(198, 40, 40, 0); }
+  100% { box-shadow: 0 0 0 0 rgba(198, 40, 40, 0); }
+}
+.pulse-critical {
+  animation: pulse-critical 1.5s infinite;
+}
+
+/* Pulse for Level 2 (Emergent) */
+@keyframes pulse-emergent {
+  0% { box-shadow: 0 0 0 0 rgba(239, 108, 0, 0.5); }
+  70% { box-shadow: 0 0 0 8px rgba(239, 108, 0, 0); }
+  100% { box-shadow: 0 0 0 0 rgba(239, 108, 0, 0); }
+}
+.pulse-emergent {
+  animation: pulse-emergent 2s infinite;
+}
+
+/* Fade in + slide up for page loads */
+@keyframes fadeSlideUp {
+  from { opacity: 0; transform: translateY(16px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+.fade-slide-up {
+  animation: fadeSlideUp 0.35s ease-out;
+}
+
+/* Shake on error (login fail, validation error) */
+@keyframes shake {
+  0%, 100% { transform: translateX(0); }
+  10%, 30%, 50%, 70%, 90% { transform: translateX(-4px); }
+  20%, 40%, 60%, 80% { transform: translateX(4px); }
+}
+.shake {
+  animation: shake 0.5s ease-in-out;
+}
+
+/* Skeleton shimmer */
+@keyframes shimmer {
+  0% { background-position: -200% 0; }
+  100% { background-position: 200% 0; }
+}
+.skeleton-shimmer {
+  background: linear-gradient(90deg, #f0f0f0 25%, #e0e0e0 50%, #f0f0f0 75%);
+  background-size: 200% 100%;
+  animation: shimmer 1.5s infinite;
+}
+
+/* Smooth counter increment */
+@keyframes countUp {
+  from { opacity: 0; transform: translateY(8px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+.count-up {
+  animation: countUp 0.4s ease-out;
+}
+
+/* New queue row highlight */
+@keyframes rowHighlight {
+  0% { background-color: rgba(13, 71, 161, 0.15); }
+  100% { background-color: transparent; }
+}
+.row-highlight {
+  animation: rowHighlight 2s ease-out;
+}
+
+/* Heartbeat for branding */
+@keyframes heartbeat {
+  0%, 100% { transform: scale(1); }
+  14% { transform: scale(1.1); }
+  28% { transform: scale(1); }
+  42% { transform: scale(1.1); }
+  70% { transform: scale(1); }
+}
+.heartbeat {
+  animation: heartbeat 2s infinite;
+}
+
+/* Spinner rotation */
+@keyframes spin {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+.spin {
+  animation: spin 1s linear infinite;
+}
