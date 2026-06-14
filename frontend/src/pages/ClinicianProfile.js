@@ -3,7 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import {
   Container, Typography, Box, Card, CardContent, Grid, Button,
   TextField, Alert, CircularProgress, Chip, Divider, Table,
-  TableBody, TableCell, TableContainer, TableHead, TableRow, Paper
+  TableBody, TableCell, TableContainer, TableHead, TableRow, Paper, Skeleton
 } from '@mui/material';
 import {
   Person as PersonIcon, Lock as LockIcon, Assessment as AssessmentIcon,
@@ -53,28 +53,41 @@ const ClinicianProfile = () => {
   };
 
   const statCards = activity ? [
-    { label: 'Total Assessments', value: activity.stats.total_assessments, icon: <AssessmentIcon />, color: '#0d47a1' },
-    { label: 'Confirmed', value: activity.stats.confirmed, icon: <ConfirmIcon />, color: '#2e7d32' },
-    { label: 'Overridden', value: activity.stats.overridden, icon: <OverrideIcon />, color: '#ef6c00' },
-    { label: 'Pending', value: activity.stats.pending, icon: <PendingIcon />, color: '#c62828' },
+    { label: 'Total Assessments', value: activity.stats.total_assessments, icon: <AssessmentIcon />, color: 'primary.main' },
+    { label: 'Confirmed', value: activity.stats.confirmed, icon: <ConfirmIcon />, color: 'success.main' },
+    { label: 'Overridden', value: activity.stats.overridden, icon: <OverrideIcon />, color: 'warning.main' },
+    { label: 'Pending', value: activity.stats.pending, icon: <PendingIcon />, color: 'error.main' },
   ] : [];
 
   return (
-    <Container maxWidth="lg" sx={{ py: 4 }}>
+    <Container maxWidth="lg" sx={{ py: 4 }} className="fade-slide-up">
       <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, mb: 4 }}>
-        <Button startIcon={<BackIcon />} onClick={() => navigate('/dashboard')} variant="outlined">
+        <Button startIcon={<BackIcon />} onClick={() => navigate('/')} variant="outlined">
           Back
         </Button>
         <Typography variant="h4" fontWeight={700}>My Profile</Typography>
       </Box>
 
-      <Grid container spacing={3}>
+      {loading && !activity && (
+        <Grid container spacing={3} sx={{ mb: 3 }}>
+          <Grid item xs={12} md={4}><Skeleton variant="rounded" height={200} /></Grid>
+          <Grid item xs={12} md={8}>
+            <Grid container spacing={2}>
+              {[0,1,2,3].map(i => (<Grid item xs={6} sm={3} key={i}><Skeleton variant="rounded" height={100} /></Grid>))}
+            </Grid>
+            <Skeleton variant="rounded" height={180} sx={{ mt: 2 }} />
+          </Grid>
+          <Grid item xs={12}><Skeleton variant="rounded" height={200} /></Grid>
+        </Grid>
+      )}
+
+      <Grid container spacing={3} sx={{ display: loading && !activity ? 'none' : undefined }}>
         {/* User Info */}
         <Grid item xs={12} md={4}>
           <Card sx={{ height: '100%' }}>
             <CardContent sx={{ p: 3 }}>
               <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, mb: 3 }}>
-                <Box sx={{ bgcolor: '#0d47a1', color: 'white', borderRadius: '50%', p: 1.5 }}>
+                <Box sx={{ bgcolor: 'primary.main', color: 'white', borderRadius: '50%', p: 1.5 }}>
                   <PersonIcon sx={{ fontSize: 32 }} />
                 </Box>
                 <Box>
@@ -150,7 +163,7 @@ const ClinicianProfile = () => {
           <Card>
             <CardContent>
               <Typography variant="h6" sx={{ mb: 2 }}>Recent Activity</Typography>
-              {loading ? <CircularProgress /> : activity?.recent_activity?.length > 0 ? (
+              {loading ? <Skeleton variant="rounded" height={120} /> : activity?.recent_activity?.length > 0 ? (
                 <TableContainer component={Paper} elevation={0}>
                   <Table size="small">
                     <TableHead>

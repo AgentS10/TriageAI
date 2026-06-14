@@ -15,6 +15,7 @@ const renderAt = (initialEntry, element, adminOnly = false) =>
           element={<ProtectedRoute adminOnly={adminOnly}>{element}</ProtectedRoute>}
         />
         <Route path="/login" element={<div>Login Page</div>} />
+        <Route path="/" element={<div>Home Page</div>} />
         <Route path="/dashboard" element={<div>Dashboard Page</div>} />
       </Routes>
     </MemoryRouter>
@@ -45,7 +46,7 @@ describe('ProtectedRoute', () => {
   it('redirects non-admins away from admin-only routes', () => {
     useAuth.mockReturnValue({ loading: false, isAuthenticated: true, isAdmin: false });
     renderAt('/protected', <div>Admin Secret</div>, true);
-    expect(screen.getByText('Dashboard Page')).toBeInTheDocument();
+    expect(screen.getByText('Home Page')).toBeInTheDocument();
     expect(screen.queryByText('Admin Secret')).not.toBeInTheDocument();
   });
 

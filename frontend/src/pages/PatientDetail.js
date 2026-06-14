@@ -2,8 +2,8 @@ import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import {
   Container, Typography, Box, Card, CardContent, Grid, Chip, Button,
-  CircularProgress, Alert, Table, TableBody, TableCell, TableContainer,
-  TableHead, TableRow, Paper, Divider
+  Alert, Table, TableBody, TableCell, TableContainer,
+  TableHead, TableRow, Paper, Divider, Skeleton
 } from '@mui/material';
 import {
   ArrowBack as BackIcon, Print as PrintIcon,
@@ -45,7 +45,18 @@ const PatientDetail = () => {
 
   const handlePrint = () => window.print();
 
-  if (loading) return <Box display="flex" justifyContent="center" py={8}><CircularProgress /></Box>;
+  if (loading) return (
+    <Container maxWidth="lg" sx={{ py: 4 }}>
+      <Skeleton variant="text" width={120} height={36} sx={{ mb: 1 }} />
+      <Skeleton variant="text" width={200} height={40} sx={{ mb: 1 }} />
+      <Skeleton variant="text" width={160} sx={{ mb: 3 }} />
+      <Grid container spacing={3}>
+        <Grid item xs={12} md={6}><Skeleton variant="rounded" height={180} /></Grid>
+        <Grid item xs={12} md={6}><Skeleton variant="rounded" height={180} /></Grid>
+        <Grid item xs={12}><Skeleton variant="rounded" height={240} /></Grid>
+      </Grid>
+    </Container>
+  );
   if (error) return <Container sx={{ py: 4 }}><Alert severity="error">{error}</Alert></Container>;
   if (!data) return null;
 
@@ -118,6 +129,32 @@ const PatientDetail = () => {
                   ))}
                 </Grid>
               ) : <Typography color="text.secondary">No vitals recorded</Typography>}
+
+              {/* Derived Indicators */}
+              {vitals && vitals.sbp > 0 && (() => {
+                const si = (vitals.heart_rate / vitals.sbp).toFixed(2);
+                const map = ((vitals.sbp + 2 * vitals.dbp) / 3).toFixed(0);
+                const pp = vitals.sbp - vitals.dbp;
+                return (
+                  <Box sx={{ mt: 2, pt: 2, borderTop: '1px solid', borderColor: 'divider' }}>
+                    <Typography variant="caption" color="text.secondary" sx={{ mb: 1, display: 'block', fontWeight: 600 }}>Derived Indicators</Typography>
+                    <Grid container spacing={2}>
+                      <Grid item xs={4}>
+                        <Typography variant="caption" color="text.secondary">Shock Index</Typography>
+                        <Typography variant="body1" fontWeight={600} color={parseFloat(si) > 0.9 ? 'error.main' : parseFloat(si) > 0.7 ? 'warning.main' : 'success.main'}>{si}</Typography>
+                      </Grid>
+                      <Grid item xs={4}>
+                        <Typography variant="caption" color="text.secondary">MAP</Typography>
+                        <Typography variant="body1" fontWeight={600} color={parseInt(map) < 65 ? 'error.main' : 'success.main'}>{map} mmHg</Typography>
+                      </Grid>
+                      <Grid item xs={4}>
+                        <Typography variant="caption" color="text.secondary">Pulse Pressure</Typography>
+                        <Typography variant="body1" fontWeight={600} color={pp > 60 || pp < 25 ? 'warning.main' : 'success.main'}>{pp} mmHg</Typography>
+                      </Grid>
+                    </Grid>
+                  </Box>
+                );
+              })()}
             </CardContent>
           </Card>
         </Grid>
@@ -184,6 +221,12 @@ const PatientDetail = () => {
                   </TableBody>
                 </Table>
               </TableContainer>
+              {assessments.length === 0 && (
+                <Box sx={{ textAlign: 'center', py: 4 }}>
+                  <HistoryIcon sx={{ fontSize: 48, color: 'text.disabled', mb: 1 }} />
+                  <Typography color="text.secondary">No triage assessments recorded for this patient.</Typography>
+                </Box>
+              )}
             </CardContent>
           </Card>
         </Grid>

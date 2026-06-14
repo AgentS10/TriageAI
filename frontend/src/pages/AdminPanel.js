@@ -1,17 +1,20 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
+import { useLocation, useNavigate } from 'react-router-dom';
 import {
   Container, Typography, Box, Card, CardContent, Grid, Tabs, Tab,
   Table, TableBody, TableCell, TableContainer, TableHead, TableRow,
-  Paper, Button, Chip, CircularProgress, Alert, TextField, IconButton,
+  Paper, Button, Chip, Alert, TextField, IconButton,
   Pagination, Dialog, DialogTitle, DialogContent, DialogActions,
-  FormControl, InputLabel, Select, MenuItem, Snackbar, Tooltip
+  FormControl, InputLabel, Select, MenuItem, Tooltip, Skeleton
 } from '@mui/material';
+import { useTheme } from '@mui/material/styles';
 import {
   Download as DownloadIcon, PersonOff as DeactivateIcon, Person as ActivateIcon,
   Refresh as RefreshIcon, Add as AddIcon, Edit as EditIcon, Key as KeyIcon,
   Delete as DeleteIcon, Search as SearchIcon, History as HistoryIcon
 } from '@mui/icons-material';
 import { useAuth } from '../contexts/AuthContext';
+import { useToast } from '../contexts/ToastContext';
 import axios from 'axios';
 import {
   BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip as RechartsTooltip, ResponsiveContainer,
@@ -20,9 +23,23 @@ import {
 
 const ESI_COLORS = { 1: '#c62828', 2: '#ef6c00', 3: '#f9a825', 4: '#2e7d32', 5: '#0277bd' };
 
+const TAB_PATHS = ['audit', 'users', 'analytics', 'search'];
+
 const AdminPanel = () => {
   const { isAdmin } = useAuth();
-  const [tab, setTab] = useState(0);
+  const location = useLocation();
+  const navigate = useNavigate();
+  const theme = useTheme();
+
+  const tab = useMemo(() => {
+    const segment = location.pathname.split('/admin/')[1]?.split('/')[0];
+    const idx = TAB_PATHS.indexOf(segment);
+    return idx >= 0 ? idx : 0;
+  }, [location.pathname]);
+
+  const setTab = (index) => {
+    navigate(`/admin/${TAB_PATHS[index]}`, { replace: true });
+  };
   const [auditLogs, setAuditLogs] = useState([]);
   const [users, setUsers] = useState([]);
   const [analytics, setAnalytics] = useState(null);
@@ -30,7 +47,7 @@ const AdminPanel = () => {
   const [loading, setLoading] = useState(true);
   const [page, setPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
-  const [snack, setSnack] = useState({ open: false, msg: '', severity: 'success' });
+  const { showToast } = useToast();
 
   // Dialogs
   const [createOpen, setCreateOpen] = useState(false);
@@ -52,7 +69,7 @@ const AdminPanel = () => {
     else if (tab === 3) fetchSearch();
   }, [tab, page]);
 
-  const show = (msg, severity = 'success') => setSnack({ open: true, msg, severity });
+  const show = (msg, severity = 'success') => showToast(msg, severity);
 
   const fetchAuditLogs = async () => {
     setLoading(true);
@@ -138,17 +155,31 @@ const AdminPanel = () => {
   if (!isAdmin) return <Container sx={{ py: 4 }}><Alert severity="error">Access denied. Admin role required.</Alert></Container>;
 
   return (
-    <Container maxWidth="lg" sx={{ py: 4 }}>
+    <Container maxWidth="lg" sx={{ py: 4 }} className="fade-slide-up">
       <Typography variant="h4" sx={{ mb: 3 }}>Administration</Typography>
 
-      <Tabs value={tab} onChange={(_, v) => { setTab(v); setPage(1); }} sx={{ mb: 3, borderBottom: 1, borderColor: 'divider' }}>
+      <Tabs value={tab} onChange={(_, v) => { setTab(v); setPage(1); }} sx={{ mb: 3, borderBottom: 1, borderColor: 'divider' }}
+        aria-label="Admin panel tabs">
         <Tab label="Audit Log" />
         <Tab label="User Management" />
         <Tab label="Analytics" />
         <Tab label="Patient History" />
       </Tabs>
 
-      {loading ? <Box display="flex" justifyContent="center" py={6}><CircularProgress /></Box> : (
+      {loading ? (
+        <Box py={2}>
+          {(tab === 0 || tab === 1 || tab === 3) && (
+            <>{[0,1,2,3,4,5].map(i => <Skeleton key={i} variant="rounded" height={40} sx={{ mb: 1 }} />)}</>
+          )}
+          {tab === 2 && (
+            <Grid container spacing={3}>
+              {[0,1,2,3].map(i => <Grid item xs={6} sm={3} key={i}><Skeleton variant="rounded" height={90} /></Grid>)}
+              <Grid item xs={12} md={6}><Skeleton variant="rounded" height={300} /></Grid>
+              <Grid item xs={12} md={6}><Skeleton variant="rounded" height={300} /></Grid>
+            </Grid>
+          )}
+        </Box>
+      ) : (
         <>
           {/* ─── AUDIT LOG ─── */}
           {tab === 0 && (
@@ -165,7 +196,8 @@ const AdminPanel = () => {
                   </TableRow></TableHead>
                   <TableBody>
                     {auditLogs.map((log) => (
-                      <TableRow key={log.log_id} hover>
+                      <TableRow key={log.log_id} hover sx={{ cursor: log.assessment_id ? 'pointer' : 'default' }}
+                        onClick={() => log.assessment_id && navigate(`/result/${log.assessment_id}`)}>
                         <TableCell><Typography variant="caption">{new Date(log.timestamp).toLocaleString()}</Typography></TableCell>
                         <TableCell><Typography variant="body2">{log.clinician_name}</Typography></TableCell>
                         <TableCell>
@@ -244,9 +276,9 @@ const AdminPanel = () => {
                     <Typography variant="h6" gutterBottom>ESI Level Distribution</Typography>
                     <ResponsiveContainer width="100%" height="85%">
                       <BarChart data={analytics.esi_distribution?.map(d => ({ name: `L${d.level}`, count: d.count })) || []}>
-                        <CartesianGrid strokeDasharray="3 3" />
-                        <XAxis dataKey="name" />
-                        <YAxis />
+                        <CartesianGrid strokeDasharray="3 3" stroke={theme.palette.divider} />
+                        <XAxis dataKey="name" tick={{ fill: theme.palette.text.secondary }} />
+                        <YAxis tick={{ fill: theme.palette.text.secondary }} />
                         <RechartsTooltip />
                         <Bar dataKey="count" fill="#0d47a1" radius={[4, 4, 0, 0]} />
                       </BarChart>
@@ -262,9 +294,9 @@ const AdminPanel = () => {
                     <Typography variant="h6" gutterBottom>Daily Assessment Volume</Typography>
                     <ResponsiveContainer width="100%" height="85%">
                       <LineChart data={analytics.daily_volume?.map(d => ({ date: d.date.slice(5), count: d.count })) || []}>
-                        <CartesianGrid strokeDasharray="3 3" />
-                        <XAxis dataKey="date" tick={{ fontSize: 12 }} />
-                        <YAxis />
+                        <CartesianGrid strokeDasharray="3 3" stroke={theme.palette.divider} />
+                        <XAxis dataKey="date" tick={{ fontSize: 12, fill: theme.palette.text.secondary }} />
+                        <YAxis tick={{ fill: theme.palette.text.secondary }} />
                         <RechartsTooltip />
                         <Line type="monotone" dataKey="count" stroke="#1565c0" strokeWidth={2} dot={{ r: 4 }} />
                       </LineChart>
@@ -344,7 +376,8 @@ const AdminPanel = () => {
                     </TableRow></TableHead>
                     <TableBody>
                       {searchResults.map((r) => (
-                        <TableRow key={r.assessment_id} hover>
+                        <TableRow key={r.assessment_id} hover sx={{ cursor: 'pointer' }}
+                          onClick={() => navigate(`/result/${r.assessment_id}`)}>
                           <TableCell><Typography variant="caption">{new Date(r.assessed_at).toLocaleString()}</Typography></TableCell>
                           <TableCell>{r.sex === 'M' ? 'Male' : 'Female'}, {r.age}y</TableCell>
                           <TableCell>{r.chief_complaint?.replace(/_/g, ' ')}</TableCell>
@@ -429,13 +462,6 @@ const AdminPanel = () => {
         </DialogActions>
       </Dialog>
 
-      {/* ─── SNACKBAR ─── */}
-      <Snackbar open={snack.open} autoHideDuration={4000} onClose={() => setSnack({ ...snack, open: false })}
-        anchorOrigin={{ vertical: 'bottom', horizontal: 'center' }}>
-        <Alert severity={snack.severity} onClose={() => setSnack({ ...snack, open: false })} sx={{ width: '100%' }}>
-          {snack.msg}
-        </Alert>
-      </Snackbar>
     </Container>
   );
 };

@@ -12,8 +12,8 @@ Key guarantees:
     inference endpoint can detect and reject mismatched models.
   - SMOTE is applied ONLY to the training fold, never to test data.
 
-Usage:
-  python train_model.py --data data/triage_data.csv --output backend/ml/artifacts
+Usage (from project root):
+  python scripts/train_model.py --data data/triage_data.csv --output backend/ml/artifacts
 """
 import sys
 import os
@@ -40,7 +40,8 @@ import warnings
 warnings.filterwarnings('ignore')
 
 # Add backend to path so we can import the contract + standards
-sys.path.insert(0, os.path.join(os.path.dirname(__file__), 'backend'))
+PROJECT_ROOT = os.path.join(os.path.dirname(__file__), '..')
+sys.path.insert(0, os.path.join(PROJECT_ROOT, 'backend'))
 from ml.feature_contract import (
     FEATURE_VECTOR_SPEC, FEATURE_NAMES, EXPECTED_FEATURE_COUNT,
     get_contract_hash, save_contract
@@ -437,8 +438,8 @@ def save_artifacts(pipeline, le, auc, report_dict, avg_brier, ece, output_dir):
 
 def main():
     parser = argparse.ArgumentParser(description="TriageAI Model Training")
-    parser.add_argument('--data', default='data/triage_data.csv', help='Path to CSV dataset')
-    parser.add_argument('--output', default='backend/ml/artifacts', help='Output directory for model artifacts')
+    parser.add_argument('--data', default=os.path.join(PROJECT_ROOT, 'data', 'triage_data.csv'), help='Path to CSV dataset')
+    parser.add_argument('--output', default=os.path.join(PROJECT_ROOT, 'backend', 'ml', 'artifacts'), help='Output directory for model artifacts')
     parser.add_argument('--trials', type=int, default=30, help='Number of Optuna trials')
     args = parser.parse_args()
 

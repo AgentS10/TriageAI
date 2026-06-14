@@ -1,9 +1,8 @@
-# TriageAI — Figma Wireframe Specification
+# TriageAI — Wireframe Specification
 
 **Project:** TriageAI Clinical Decision Support System  
 **Author:** M.S.M.Sajidh (CL/BSCSD/34/01)  
-**Tool:** Figma (recommended)  
-**Grid:** 8px baseline, 12-column (desktop), 4-column (mobile)  
+**Grid:** 8px baseline, 12-column (desktop)  
 **Palette:** Primary `#0d47a1`, Secondary `#00838f`, Background `#f0f2f5`, Surface `#ffffff`
 
 ---
@@ -307,4 +306,4 @@
 
 ---
 
-*This document serves as the design specification for Figma wireframe creation.*
+*This document serves as the design specification for wireframe creation.*

@@ -52,7 +52,7 @@ const SystemSettings = () => {
   }
 
   return (
-    <Container maxWidth="md" sx={{ py: 4 }}>
+    <Container maxWidth="md" sx={{ py: 4 }} className="fade-slide-up">
       <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, mb: 4 }}>
         <Button startIcon={<BackIcon />} onClick={() => navigate('/admin')} variant="outlined">
           Back

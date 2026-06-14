@@ -9,11 +9,11 @@ const NotFound = () => {
   return (
     <Box sx={{
       minHeight: '100vh', display: 'flex', alignItems: 'center',
-      justifyContent: 'center', bgcolor: '#f0f2f5', p: 3
+      justifyContent: 'center', bgcolor: 'background.default', p: 3
     }}>
       <Card sx={{ maxWidth: 500, textAlign: 'center', borderRadius: 4 }} className="fade-slide-up">
         <CardContent sx={{ p: 5 }}>
-          <ErrorIcon sx={{ fontSize: 72, color: '#0d47a1', mb: 2 }} />
+          <ErrorIcon sx={{ fontSize: 72, color: 'primary.main', mb: 2 }} />
           <Typography variant="h3" gutterBottom fontWeight={800}>
             404
           </Typography>
@@ -25,7 +25,7 @@ const NotFound = () => {
           </Typography>
           <Button
             variant="contained" size="large" startIcon={<HomeIcon />}
-            onClick={() => navigate('/dashboard')}
+            onClick={() => navigate('/')}
             sx={{ background: 'linear-gradient(135deg, #0d47a1, #1565c0)', px: 4 }}
           >
             Back to Dashboard

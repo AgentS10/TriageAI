@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import {
   AppBar, Toolbar, Typography, Button, Box, IconButton,
-  Menu, MenuItem, Avatar, Tooltip, Divider, Badge
+  Menu, MenuItem, Avatar, Tooltip, Divider
 } from '@mui/material';
 import {
   MedicalServices as MedicalIcon,
@@ -13,15 +13,20 @@ import {
   Logout as LogoutIcon,
   Warning as WarningIcon,
   Person as PersonIcon,
-  Assignment as HandoverIcon
+  Assignment as HandoverIcon,
+  DarkMode as DarkModeIcon,
+  LightMode as LightModeIcon,
+  Info as InfoIcon
 } from '@mui/icons-material';
 import { useAuth } from '../contexts/AuthContext';
+import { useThemeMode } from '../contexts/ThemeContext';
 
 const Navbar = () => {
   const { user, logout, isAdmin } = useAuth();
   const navigate = useNavigate();
   const location = useLocation();
   const [profileAnchor, setProfileAnchor] = useState(null);
+  const { mode, toggleTheme } = useThemeMode();
 
   const navItems = [
     { label: 'Dashboard', path: '/dashboard', icon: <DashboardIcon fontSize="small" /> },
@@ -46,7 +51,7 @@ const Navbar = () => {
         background: 'linear-gradient(135deg, #0d47a1 0%, #1565c0 50%, #0277bd 100%)',
       }}>
         <Toolbar sx={{ minHeight: 56 }}>
-          <Box sx={{ display: 'flex', alignItems: 'center', cursor: 'pointer', mr: 4 }} onClick={() => navigate('/dashboard')}>
+          <Box sx={{ display: 'flex', alignItems: 'center', cursor: 'pointer', mr: 4 }} onClick={() => navigate(isAdmin ? '/dashboard' : '/queue')}>
             <Box sx={{
               bgcolor: 'rgba(255,255,255,0.15)', borderRadius: 2, p: 0.7, mr: 1.2,
               display: 'flex', alignItems: 'center', justifyContent: 'center'
@@ -86,6 +91,11 @@ const Navbar = () => {
           </Box>
 
           <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+            <Tooltip title={mode === 'dark' ? 'Switch to light mode' : 'Switch to dark mode (night shift)'}>
+              <IconButton size="small" onClick={toggleTheme} sx={{ color: 'rgba(255,255,255,0.8)' }}>
+                {mode === 'dark' ? <LightModeIcon fontSize="small" /> : <DarkModeIcon fontSize="small" />}
+              </IconButton>
+            </Tooltip>
             <Tooltip title={`${user?.username} (${user?.role})`}>
               <IconButton size="small" onClick={(e) => setProfileAnchor(e.currentTarget)} sx={{ ml: 0.5 }}>
                 <Avatar sx={{
@@ -115,6 +125,9 @@ const Navbar = () => {
                 </MenuItem>
               )}
               <Divider />
+              <MenuItem onClick={() => { setProfileAnchor(null); navigate('/about'); }} dense>
+                <InfoIcon fontSize="small" sx={{ mr: 1 }} /> About TriageAI
+              </MenuItem>
               <MenuItem onClick={handleLogout} dense sx={{ color: 'error.main' }}>
                 <LogoutIcon fontSize="small" sx={{ mr: 1 }} /> Sign Out
               </MenuItem>
@@ -124,12 +137,13 @@ const Navbar = () => {
       </AppBar>
 
       <Box sx={{
-        bgcolor: '#fff8e1', px: 2.5, py: 0.6,
+        bgcolor: mode === 'dark' ? 'rgba(255,248,225,0.08)' : '#fff8e1',
+        px: 2.5, py: 0.6,
         display: 'flex', alignItems: 'center', gap: 1,
-        borderBottom: '1px solid #ffe082'
+        borderBottom: mode === 'dark' ? '1px solid rgba(255,224,130,0.15)' : '1px solid #ffe082'
       }}>
         <WarningIcon sx={{ color: '#f57f17', fontSize: 16 }} />
-        <Typography variant="caption" sx={{ color: '#e65100', fontWeight: 500 }}>
+        <Typography variant="caption" sx={{ color: mode === 'dark' ? '#ffcc80' : '#e65100', fontWeight: 500 }}>
           Advisory Only — All AI recommendations require clinician confirmation before clinical action. This is a research prototype.
         </Typography>
       </Box>

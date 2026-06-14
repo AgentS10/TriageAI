@@ -57,7 +57,7 @@ npm start
 **3. Train ML Model**
 ```bash
 # Place datasets in the data/ directory
-python train_model.py --data data/triage_data.csv --output backend/ml/artifacts
+python scripts/train_model.py --data data/triage_data.csv --output backend/ml/artifacts
 ```
 
 ## Testing
@@ -157,7 +157,6 @@ Trained on **126,420 real triage records** (Kaggle Hospital Triage dataset).
 
 ```
 ├── .github/workflows/ci.yml    # GitHub Actions: backend pytest + frontend build/test
-├── train_model.py              # ML training pipeline (contract-aligned, MLflow-tracked)
 ├── docker-compose.yml          # Full stack deployment
 ├── requirements.txt            # Top-level Python dependencies
 ├── .env.example                # Environment variable template
@@ -165,7 +164,8 @@ Trained on **126,420 real triage records** (Kaggle Hospital Triage dataset).
 │   ├── triage_data.csv         # Synthetic dev dataset
 │   ├── triage_data_real.csv    # Prepared Kaggle dataset
 │   └── 5v_cleandf.csv          # Raw Kaggle source
-├── scripts/                    # Data prep, monitoring, perf, load-test utilities
+├── scripts/                    # Training, data prep, monitoring, load-test utilities
+│   ├── train_model.py          # ML training pipeline (contract-aligned, MLflow-tracked)
 │   ├── generate_dataset.py     # Synthetic dataset generator
 │   ├── prepare_real_data.py    # Kaggle → feature-contract mapper
 │   ├── check_dataset.py        # Dataset sanity checker
@@ -174,7 +174,8 @@ Trained on **126,420 real triage records** (Kaggle Hospital Triage dataset).
 │   ├── benchmark_inference.py  # Inference latency benchmark
 │   ├── locustfile.py           # Locust load test
 │   ├── smoke_test_api.py       # Live-server API smoke test
-│   └── smoke_test_features.py  # Live-server feature smoke test
+│   ├── smoke_test_features.py  # Live-server feature smoke test
+│   └── generate_proposal.js    # Proposal document generator (Node.js)
 ├── jmeter/                     # Load testing (JMeter plan + README)
 ├── notebooks/                  # EDA, fairness, evaluation, external validation
 │   ├── 01_eda.py
@@ -188,7 +189,8 @@ Trained on **126,420 real triage records** (Kaggle Hospital Triage dataset).
 │   ├── SECURITY_COMPLIANCE.md
 │   ├── TEXT_TOKEN_STRATEGY.md
 │   ├── USABILITY_METRICS.md
-│   ├── figma_wireframes.md
+│   ├── UPDATED_PROPOSAL.md
+│   ├── wireframes.md
 │   ├── uat_script.md
 │   └── sus_questionnaire.md
 ├── tests/                      # Pytest suite (unit + API + enhancements + resilience)
@@ -230,11 +232,12 @@ Trained on **126,420 real triage records** (Kaggle Hospital Triage dataset).
     └── src/
         ├── App.js
         ├── index.js
-        ├── contexts/AuthContext.js
-        ├── components/         # Layout, Navbar, ProtectedRoute
+        ├── contexts/           # AuthContext, ThemeContext, ToastContext
+        ├── components/         # Layout, Navbar, ProtectedRoute, ErrorBoundary
         └── pages/              # Login, Dashboard, PatientIntake, TriageResult,
-                                # PatientQueue, AdminPanel, ClinicianProfile,
-                                # ShiftHandover, SystemSettings, NotFound
+                                # PatientQueue, PatientDetail, AdminPanel,
+                                # ClinicianProfile, ShiftHandover, SystemSettings,
+                                # SystemAbout, NotFound
 ```
 
 ## Dataset

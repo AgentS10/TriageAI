@@ -31,7 +31,7 @@ const Login = () => {
     e.preventDefault();
     setLoading(true);
     const result = await login(formData.username, formData.password);
-    if (result.success) navigate('/dashboard');
+    if (result.success) navigate('/');
     setLoading(false);
   };
 
@@ -105,7 +105,7 @@ const Login = () => {
                 </Button>
               </Box>
 
-              <Box sx={{ mt: 3, p: 1.5, bgcolor: '#f5f5f5', borderRadius: 2 }}>
+              <Box sx={{ mt: 3, p: 1.5, bgcolor: 'action.hover', borderRadius: 2 }}>
                 <Typography variant="caption" color="text.secondary" sx={{ display: 'block', lineHeight: 1.6 }}>
                   <strong>Research Prototype</strong> — Not for real clinical use.
                   All AI recommendations require clinician confirmation.

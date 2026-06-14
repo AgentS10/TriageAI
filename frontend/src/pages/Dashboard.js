@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import {
   Container, Grid, Card, CardContent, Typography, Box, Button,
-  CircularProgress, Chip, LinearProgress, Skeleton
+  Chip, Skeleton
 } from '@mui/material';
 import {
   PersonAdd as IntakeIcon,
@@ -31,7 +31,7 @@ const StatCard = ({ value, label, color, icon, suffix = '' }) => (
             {value}{suffix}
           </Typography>
         </Box>
-        <Box sx={{ bgcolor: `${color}15`, borderRadius: 2, p: 1, display: 'flex' }}>
+        <Box sx={{ bgcolor: 'action.hover', borderRadius: 2, p: 1, display: 'flex' }}>
           {React.cloneElement(icon, { sx: { color, fontSize: 22 } })}
         </Box>
       </Box>
@@ -68,9 +68,10 @@ const Dashboard = () => {
   const navigate = useNavigate();
   const [stats, setStats] = useState(null);
   const [queueStats, setQueueStats] = useState(null);
+  const [myActivity, setMyActivity] = useState(null);
   const [loading, setLoading] = useState(true);
 
-  useEffect(() => { fetchStats(); fetchQueueStats(); }, []);
+  useEffect(() => { fetchStats(); fetchQueueStats(); fetchMyActivity(); }, []);
 
   const fetchStats = async () => {
     try {
@@ -89,11 +90,18 @@ const Dashboard = () => {
     } catch (e) { console.error('Queue stats failed:', e); }
   };
 
+  const fetchMyActivity = async () => {
+    try {
+      const r = await axios.get('/api/auth/profile/activity');
+      setMyActivity(r.data);
+    } catch (e) { console.error('Activity fetch failed:', e); }
+  };
+
   const now = new Date();
   const greeting = now.getHours() < 12 ? 'Good Morning' : now.getHours() < 18 ? 'Good Afternoon' : 'Good Evening';
 
   return (
-    <Container maxWidth="lg" sx={{ py: 4 }}>
+    <Container maxWidth="lg" sx={{ py: 4 }} className="fade-slide-up">
       {/* Header */}
       <Box sx={{ mb: 4 }}>
         <Typography variant="h4" sx={{ mb: 0.5 }}>
@@ -105,13 +113,25 @@ const Dashboard = () => {
       </Box>
 
       {/* Live Queue Stats */}
+      {!queueStats && (
+        <Grid container spacing={2} sx={{ mb: 4 }}>
+          {[0,1,2,3].map(i => (
+            <Grid item xs={6} sm={3} key={i}>
+              <Card><CardContent sx={{ py: 2, textAlign: 'center' }}>
+                <Skeleton variant="text" width={60} height={48} sx={{ mx: 'auto' }} />
+                <Skeleton variant="text" width={100} sx={{ mx: 'auto' }} />
+              </CardContent></Card>
+            </Grid>
+          ))}
+        </Grid>
+      )}
       {queueStats && (
         <Grid container spacing={2} sx={{ mb: 4 }}>
           <Grid item xs={6} sm={3}>
-            <Card sx={{ bgcolor: queueStats.critical_count > 0 ? '#ffebee' : 'white' }}
+            <Card sx={{ bgcolor: queueStats.critical_count > 0 ? 'error.50' : 'background.paper' }}
               className={queueStats.critical_count > 0 ? 'pulse-critical' : ''}>
               <CardContent sx={{ py: 2, textAlign: 'center' }}>
-                <Typography variant="h3" sx={{ color: '#c62828', fontWeight: 800 }} className="count-up">
+                <Typography variant="h3" sx={{ color: 'error.main', fontWeight: 800 }} className="count-up">
                   {queueStats.critical_count}
                 </Typography>
                 <Typography variant="caption" color="text.secondary">Critical Waiting (L1-2)</Typography>
@@ -121,7 +141,7 @@ const Dashboard = () => {
           <Grid item xs={6} sm={3}>
             <Card>
               <CardContent sx={{ py: 2, textAlign: 'center' }}>
-                <Typography variant="h3" sx={{ color: '#ef6c00', fontWeight: 800 }} className="count-up">
+                <Typography variant="h3" sx={{ color: 'warning.main', fontWeight: 800 }} className="count-up">
                   {queueStats.pending_count}
                 </Typography>
                 <Typography variant="caption" color="text.secondary">Total Pending</Typography>
@@ -131,7 +151,7 @@ const Dashboard = () => {
           <Grid item xs={6} sm={3}>
             <Card>
               <CardContent sx={{ py: 2, textAlign: 'center' }}>
-                <Typography variant="h3" sx={{ color: '#0d47a1', fontWeight: 800 }} className="count-up">
+                <Typography variant="h3" sx={{ color: 'primary.main', fontWeight: 800 }} className="count-up">
                   {queueStats.today_total}
                 </Typography>
                 <Typography variant="caption" color="text.secondary">Today's Assessments</Typography>
@@ -141,7 +161,7 @@ const Dashboard = () => {
           <Grid item xs={6} sm={3}>
             <Card>
               <CardContent sx={{ py: 2, textAlign: 'center' }}>
-                <Typography variant="h3" sx={{ color: '#2e7d32', fontWeight: 800 }} className="count-up">
+                <Typography variant="h3" sx={{ color: 'success.main', fontWeight: 800 }} className="count-up">
                   {queueStats.today_confirmed}
                 </Typography>
                 <Typography variant="caption" color="text.secondary">Today Confirmed</Typography>
@@ -181,16 +201,16 @@ const Dashboard = () => {
           ) : stats ? (
             <Grid container spacing={3}>
               <Grid item xs={6} sm={3}>
-                <StatCard value={stats.overview?.total_assessments || 0} label="Total Assessments" color="#0d47a1" icon={<HeartIcon />} />
+                <StatCard value={stats.overview?.total_assessments || 0} label="Total Assessments" color="primary.main" icon={<HeartIcon />} />
               </Grid>
               <Grid item xs={6} sm={3}>
-                <StatCard value={stats.overview?.ai_clinician_agreement_rate || 0} label="AI Agreement" color="#2e7d32" icon={<CheckIcon />} suffix="%" />
+                <StatCard value={stats.overview?.ai_clinician_agreement_rate || 0} label="AI Agreement" color="success.main" icon={<CheckIcon />} suffix="%" />
               </Grid>
               <Grid item xs={6} sm={3}>
-                <StatCard value={stats.overview?.overridden_assessments || 0} label="Overrides" color="#ef6c00" icon={<OverrideIcon />} />
+                <StatCard value={stats.overview?.overridden_assessments || 0} label="Overrides" color="warning.main" icon={<OverrideIcon />} />
               </Grid>
               <Grid item xs={6} sm={3}>
-                <StatCard value={Math.round(stats.overview?.override_rate || 0)} label="Override Rate" color="#c62828" icon={<TrendingIcon />} suffix="%" />
+                <StatCard value={Math.round(stats.overview?.override_rate || 0)} label="Override Rate" color="error.main" icon={<TrendingIcon />} suffix="%" />
               </Grid>
             </Grid>
           ) : (
@@ -201,26 +221,47 @@ const Dashboard = () => {
         </>
       )}
 
+      {/* Clinician Personal Stats */}
+      {myActivity?.stats && (
+        <>
+          <Typography variant="h6" sx={{ mb: 2, mt: 4 }}>Your Activity</Typography>
+          <Grid container spacing={3} sx={{ mb: 2 }}>
+            <Grid item xs={6} sm={3}>
+              <StatCard value={myActivity.stats.total_assessments || 0} label="My Assessments" color="primary.main" icon={<HeartIcon />} />
+            </Grid>
+            <Grid item xs={6} sm={3}>
+              <StatCard value={myActivity.stats.confirmed || 0} label="Confirmed" color="success.main" icon={<CheckIcon />} />
+            </Grid>
+            <Grid item xs={6} sm={3}>
+              <StatCard value={myActivity.stats.overridden || 0} label="Overrides" color="warning.main" icon={<OverrideIcon />} />
+            </Grid>
+            <Grid item xs={6} sm={3}>
+              <StatCard value={myActivity.stats.pending || 0} label="Pending" color="error.main" icon={<TimeIcon />} />
+            </Grid>
+          </Grid>
+        </>
+      )}
+
       {/* System Info */}
-      <Card sx={{ mt: 4, bgcolor: '#f8f9fa' }}>
+      <Card sx={{ mt: 4, bgcolor: 'action.hover' }}>
         <CardContent sx={{ p: 3 }}>
           <Typography variant="subtitle2" color="text.secondary" gutterBottom>System Status</Typography>
           <Grid container spacing={2}>
             <Grid item xs={4}>
               <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                <Box sx={{ width: 8, height: 8, borderRadius: '50%', bgcolor: '#2e7d32' }} />
+                <Box sx={{ width: 8, height: 8, borderRadius: '50%', bgcolor: 'success.main' }} />
                 <Typography variant="body2">ML Model Active</Typography>
               </Box>
             </Grid>
             <Grid item xs={4}>
               <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                <Box sx={{ width: 8, height: 8, borderRadius: '50%', bgcolor: '#2e7d32' }} />
+                <Box sx={{ width: 8, height: 8, borderRadius: '50%', bgcolor: 'success.main' }} />
                 <Typography variant="body2">API Healthy</Typography>
               </Box>
             </Grid>
             <Grid item xs={4}>
               <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                <Box sx={{ width: 8, height: 8, borderRadius: '50%', bgcolor: '#2e7d32' }} />
+                <Box sx={{ width: 8, height: 8, borderRadius: '50%', bgcolor: 'success.main' }} />
                 <Typography variant="body2">Audit Logging Active</Typography>
               </Box>
             </Grid>

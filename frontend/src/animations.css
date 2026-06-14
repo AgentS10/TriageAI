@@ -88,3 +88,19 @@
 .spin {
   animation: spin 1s linear infinite;
 }
+
+/* Wait-time breach escalation — pulses row background when patient exceeds ESI-appropriate wait threshold */
+@keyframes wait-breach-critical {
+  0%, 100% { background-color: rgba(198, 40, 40, 0.06); }
+  50% { background-color: rgba(198, 40, 40, 0.18); }
+}
+@keyframes wait-breach-warning {
+  0%, 100% { background-color: rgba(239, 108, 0, 0.04); }
+  50% { background-color: rgba(239, 108, 0, 0.12); }
+}
+.wait-breach-critical {
+  animation: wait-breach-critical 1.5s ease-in-out infinite;
+}
+.wait-breach-warning {
+  animation: wait-breach-warning 2.5s ease-in-out infinite;
+}

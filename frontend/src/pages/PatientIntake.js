@@ -3,7 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import {
   Container, Typography, Box, Grid, TextField, Button, FormControl, InputLabel,
   Select, MenuItem, Slider, Alert, CircularProgress, Card, CardContent, Chip,
-  Stepper, Step, StepLabel, Snackbar
+  Stepper, Step, StepLabel, Checkbox, FormControlLabel
 } from '@mui/material';
 import {
   Person as PersonIcon,
@@ -14,6 +14,7 @@ import {
   ArrowForward as NextIcon
 } from '@mui/icons-material';
 import { useAuth } from '../contexts/AuthContext';
+import { useToast } from '../contexts/ToastContext';
 import axios from 'axios';
 
 const PatientIntake = () => {
@@ -22,7 +23,7 @@ const PatientIntake = () => {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
   const [success, setSuccess] = useState(null);
-  const [toast, setToast] = useState({ open: false, message: '', severity: 'success' });
+  const { showToast } = useToast();
   const [activeStep, setActiveStep] = useState(0);
 
   const steps = ['Patient Information', 'Vital Signs', 'Medications & Submit'];
@@ -32,6 +33,7 @@ const PatientIntake = () => {
     sex: '',
     chief_complaint: '',
     pain_score: 5,
+    pain_unable: false,
     medication_flags: {
       anticoagulant: false,
       diabetic: false,
@@ -87,7 +89,7 @@ const PatientIntake = () => {
         const draft = JSON.parse(saved);
         if (draft.patientData) setPatientData(draft.patientData);
         if (draft.vitalsData) setVitalsData(draft.vitalsData);
-        setToast({ open: true, message: 'Draft restored from auto-save', severity: 'info' });
+        showToast('Draft restored from auto-save', 'info');
       } catch (e) { /* ignore corrupt draft */ }
     }
   }, []);
@@ -198,7 +200,7 @@ const PatientIntake = () => {
       });
       
       setSuccess('Triage assessment completed successfully!');
-      setToast({ open: true, message: 'Assessment submitted successfully', severity: 'success' });
+      showToast('Assessment submitted successfully', 'success');
       localStorage.removeItem('intake_draft');
       sessionStorage.setItem(`result_${response.data.assessment_id}`, JSON.stringify(response.data));
       setTimeout(() => {
@@ -208,7 +210,7 @@ const PatientIntake = () => {
     } catch (error) {
       const errorMessage = error.response?.data?.error || 'Assessment failed';
       setError(errorMessage);
-      setToast({ open: true, message: errorMessage, severity: 'error' });
+      showToast(errorMessage, 'error');
     } finally {
       setLoading(false);
     }
@@ -299,14 +301,31 @@ const PatientIntake = () => {
                   <Grid item xs={12}>
                     <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 0.5 }}>
                       <Typography variant="subtitle2">Pain Score</Typography>
-                      <Chip label={`${patientData.pain_score}/10`} size="small"
-                        sx={{ bgcolor: painColor, color: 'white', fontWeight: 700, minWidth: 50 }} />
+                      <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                        <FormControlLabel
+                          control={
+                            <Checkbox
+                              size="small"
+                              checked={patientData.pain_unable}
+                              onChange={(e) => {
+                                handlePatientDataChange('pain_unable', e.target.checked);
+                                if (e.target.checked) handlePatientDataChange('pain_score', 0);
+                              }}
+                            />
+                          }
+                          label={<Typography variant="caption">Unable to assess</Typography>}
+                          sx={{ mr: 0 }}
+                        />
+                        <Chip label={patientData.pain_unable ? 'N/A' : `${patientData.pain_score}/10`} size="small"
+                          sx={{ bgcolor: patientData.pain_unable ? '#9e9e9e' : painColor, color: 'white', fontWeight: 700, minWidth: 50 }} />
+                      </Box>
                     </Box>
                     <Slider
                       value={patientData.pain_score}
                       onChange={(e, value) => handlePatientDataChange('pain_score', value)}
                       min={0}
                       max={10}
+                      disabled={patientData.pain_unable}
                       marks={[
                         { value: 0, label: '0' },
                         { value: 3, label: '3' },
@@ -316,6 +335,11 @@ const PatientIntake = () => {
                       ]}
                       valueLabelDisplay="auto"
                     />
+                    {patientData.pain_unable && (
+                      <Typography variant="caption" color="text.secondary">
+                        Patient unable to self-report pain (e.g. altered mental status, intubated, paediatric)
+                      </Typography>
+                    )}
                   </Grid>
                 </Grid>
               </CardContent>
@@ -474,14 +498,6 @@ const PatientIntake = () => {
         </Grid>
       </form>
 
-      {/* Toast */}
-      <Snackbar open={toast.open} autoHideDuration={3000}
-        onClose={() => setToast({ ...toast, open: false })}
-        anchorOrigin={{ vertical: 'bottom', horizontal: 'center' }}>
-        <Alert severity={toast.severity} onClose={() => setToast({ ...toast, open: false })} sx={{ width: '100%' }}>
-          {toast.message}
-        </Alert>
-      </Snackbar>
     </Container>
   );
 };

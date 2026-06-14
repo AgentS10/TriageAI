@@ -21,11 +21,11 @@ class ErrorBoundary extends React.Component {
       return (
         <Box sx={{
           minHeight: '100vh', display: 'flex', alignItems: 'center',
-          justifyContent: 'center', bgcolor: '#f0f2f5', p: 3
+          justifyContent: 'center', bgcolor: 'background.default', p: 3
         }}>
           <Card sx={{ maxWidth: 500, textAlign: 'center' }}>
             <CardContent sx={{ p: 4 }}>
-              <ErrorIcon sx={{ fontSize: 64, color: '#c62828', mb: 2 }} />
+              <ErrorIcon sx={{ fontSize: 64, color: 'error.main', mb: 2 }} />
               <Typography variant="h5" gutterBottom fontWeight={700}>
                 Something went wrong
               </Typography>
@@ -34,8 +34,8 @@ class ErrorBoundary extends React.Component {
                 Please refresh the page to continue.
               </Typography>
               <Typography variant="caption" sx={{
-                display: 'block', mb: 3, p: 1.5, bgcolor: '#f5f5f5',
-                borderRadius: 1, fontFamily: 'monospace', color: '#666'
+                display: 'block', mb: 3, p: 1.5, bgcolor: 'action.hover',
+                borderRadius: 1, fontFamily: 'monospace', color: 'text.secondary'
               }}>
                 {this.state.error?.message || 'Unknown error'}
               </Typography>

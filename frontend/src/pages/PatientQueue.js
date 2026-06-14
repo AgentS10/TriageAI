@@ -4,9 +4,9 @@ import {
   Container, Typography, Box, Card, CardContent, Grid,
   Chip, Button, CircularProgress, Alert, TextField, FormControl,
   InputLabel, Select, MenuItem, Table, TableBody, TableCell,
-  TableContainer, TableHead, TableRow, Paper, IconButton
+  TableContainer, TableHead, TableRow, Paper, IconButton, Skeleton
 } from '@mui/material';
-import { Refresh as RefreshIcon, Visibility as ViewIcon } from '@mui/icons-material';
+import { Refresh as RefreshIcon, Visibility as ViewIcon, WarningAmber as BreachIcon } from '@mui/icons-material';
 import axios from 'axios';
 
 const ESI_COLORS = {
@@ -19,9 +19,24 @@ const ESI_COLORS = {
 
 const SORT_OPTIONS = [
   { value: 'priority', label: 'Priority' },
-  { value: 'arrival', label: 'Arrival Time' },
-  { value: 'wait', label: 'Wait Time' },
+  { value: 'arrival', label: 'Arrival Time (newest)' },
+  { value: 'wait', label: 'Wait Time (longest)' },
 ];
+
+// ESI-appropriate maximum wait thresholds (minutes) — based on ESI Implementation Handbook
+const ESI_WAIT_THRESHOLDS = { 1: 0, 2: 10, 3: 30, 4: 60, 5: 120 };
+
+const getWaitMinutes = (timestamp) => {
+  return Math.floor((Date.now() - new Date(timestamp).getTime()) / 60000);
+};
+
+const getBreachStatus = (priority, timestamp) => {
+  const waited = getWaitMinutes(timestamp);
+  const threshold = ESI_WAIT_THRESHOLDS[priority] ?? 60;
+  if (waited >= threshold * 2) return 'critical';   // double the threshold
+  if (waited >= threshold) return 'warning';          // at/past threshold
+  return null;
+};
 
 const PatientQueue = () => {
   const navigate = useNavigate();
@@ -67,7 +82,7 @@ const PatientQueue = () => {
   filteredQueue = [...filteredQueue].sort((a, b) => {
     if (sortBy === 'priority') return a.ai_priority - b.ai_priority;
     if (sortBy === 'arrival') return new Date(b.timestamp) - new Date(a.timestamp);
-    if (sortBy === 'wait') return new Date(b.timestamp) - new Date(a.timestamp);
+    if (sortBy === 'wait') return new Date(a.timestamp) - new Date(b.timestamp);
     return 0;
   });
 
@@ -84,14 +99,26 @@ const PatientQueue = () => {
 
   if (loading) {
     return (
-      <Box display="flex" justifyContent="center" alignItems="center" minHeight="60vh">
-        <CircularProgress />
-      </Box>
+      <Container maxWidth="lg" sx={{ mt: 4, mb: 4 }}>
+        <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 3 }}>
+          <Box>
+            <Skeleton variant="text" width={280} height={40} />
+            <Skeleton variant="text" width={200} height={24} />
+          </Box>
+          <Box sx={{ display: 'flex', gap: 2 }}>
+            <Skeleton variant="rounded" width={140} height={40} sx={{ borderRadius: 2 }} />
+            <Skeleton variant="rounded" width={150} height={40} sx={{ borderRadius: 2 }} />
+          </Box>
+        </Box>
+        {[1,2,3,4,5].map(i => (
+          <Skeleton key={i} variant="rounded" height={56} sx={{ mb: 1, borderRadius: 2 }} />
+        ))}
+      </Container>
     );
   }
 
   return (
-    <Container maxWidth="lg" sx={{ mt: 4, mb: 4 }}>
+    <Container maxWidth="lg" sx={{ mt: 4, mb: 4 }} className="fade-slide-up">
       <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 3 }}>
         <Box>
           <Typography variant="h4" fontWeight="bold">
@@ -139,7 +166,7 @@ const PatientQueue = () => {
       ) : (
         <TableContainer component={Paper} elevation={2}>
           <Table>
-            <TableHead sx={{ bgcolor: 'grey.100' }}>
+            <TableHead sx={{ bgcolor: 'action.hover' }}>
               <TableRow>
                 <TableCell><strong>Priority</strong></TableCell>
                 <TableCell><strong>Patient</strong></TableCell>
@@ -155,6 +182,7 @@ const PatientQueue = () => {
                 <TableRow
                   key={patient.assessment_id}
                   hover
+                  className={getBreachStatus(patient.ai_priority, patient.timestamp) === 'critical' ? 'wait-breach-critical' : getBreachStatus(patient.ai_priority, patient.timestamp) === 'warning' ? 'wait-breach-warning' : ''}
                   sx={{
                     borderLeft: `4px solid ${ESI_COLORS[patient.ai_priority]?.bg || '#999'}`,
                     '&:hover': { bgcolor: 'action.hover' }
@@ -188,9 +216,23 @@ const PatientQueue = () => {
                     </Typography>
                   </TableCell>
                   <TableCell>
-                    <Typography variant="body2" fontWeight={600} color={patient.ai_priority <= 2 ? 'error' : 'text.primary'}>
-                      {getWaitTime(patient.timestamp)}
-                    </Typography>
+                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
+                      {getBreachStatus(patient.ai_priority, patient.timestamp) && (
+                        <BreachIcon sx={{ fontSize: 16, color: getBreachStatus(patient.ai_priority, patient.timestamp) === 'critical' ? '#c62828' : '#ef6c00' }} />
+                      )}
+                      <Typography variant="body2" fontWeight={600} color={
+                        getBreachStatus(patient.ai_priority, patient.timestamp) === 'critical' ? '#c62828' :
+                        getBreachStatus(patient.ai_priority, patient.timestamp) === 'warning' ? '#ef6c00' :
+                        patient.ai_priority <= 2 ? 'error' : 'text.primary'
+                      }>
+                        {getWaitTime(patient.timestamp)}
+                      </Typography>
+                    </Box>
+                    {getBreachStatus(patient.ai_priority, patient.timestamp) && (
+                      <Typography variant="caption" color="error" sx={{ fontSize: '0.65rem' }}>
+                        Exceeds L{patient.ai_priority} threshold ({ESI_WAIT_THRESHOLDS[patient.ai_priority]}min)
+                      </Typography>
+                    )}
                   </TableCell>
                   <TableCell>
                     <IconButton

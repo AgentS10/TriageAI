@@ -2,8 +2,8 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import {
   Container, Typography, Box, Card, CardContent, Grid, Button,
-  Chip, CircularProgress, Alert, Table, TableBody, TableCell,
-  TableContainer, TableHead, TableRow, Paper, Divider
+  Chip, Alert, Table, TableBody, TableCell,
+  TableContainer, TableHead, TableRow, Paper, Divider, Skeleton
 } from '@mui/material';
 import {
   Assignment as AssignmentIcon, CheckCircle as ConfirmIcon,
@@ -31,13 +31,22 @@ const ShiftHandover = () => {
   };
 
   if (loading) return (
-    <Container sx={{ py: 8, textAlign: 'center' }}>
-      <CircularProgress />
+    <Container maxWidth="lg" sx={{ py: 4 }}>
+      <Skeleton variant="text" width={220} height={40} sx={{ mb: 1 }} />
+      <Skeleton variant="text" width={300} sx={{ mb: 3 }} />
+      <Grid container spacing={3}>
+        {[0,1,2,3].map(i => (
+          <Grid item xs={6} sm={3} key={i}><Skeleton variant="rounded" height={110} /></Grid>
+        ))}
+        <Grid item xs={12} md={6}><Skeleton variant="rounded" height={120} /></Grid>
+        <Grid item xs={12} md={6}><Skeleton variant="rounded" height={120} /></Grid>
+        <Grid item xs={12}><Skeleton variant="rounded" height={200} /></Grid>
+      </Grid>
     </Container>
   );
 
   return (
-    <Container maxWidth="lg" sx={{ py: 4 }}>
+    <Container maxWidth="lg" sx={{ py: 4 }} className="fade-slide-up">
       <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 3 }}>
         <Box>
           <Typography variant="h4" fontWeight={700}>Shift Handover</Typography>
@@ -45,8 +54,8 @@ const ShiftHandover = () => {
             {data?.date ? new Date(data.date).toLocaleDateString('en-GB', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' }) : ''}
           </Typography>
         </Box>
-        <Button startIcon={<BackIcon />} variant="outlined" onClick={() => navigate('/dashboard')}>
-          Back to Dashboard
+        <Button startIcon={<BackIcon />} variant="outlined" onClick={() => navigate('/')}>
+          Back
         </Button>
       </Box>
 
@@ -56,29 +65,29 @@ const ShiftHandover = () => {
         {/* Summary Cards */}
         <Grid item xs={6} sm={3}>
           <Card><CardContent sx={{ textAlign: 'center', py: 3 }}>
-            <AssignmentIcon sx={{ fontSize: 28, color: '#0d47a1', mb: 1 }} />
-            <Typography variant="h4" sx={{ color: '#0d47a1', fontWeight: 800 }}>{data?.summary?.total || 0}</Typography>
+            <AssignmentIcon sx={{ fontSize: 28, color: 'primary.main', mb: 1 }} />
+            <Typography variant="h4" sx={{ color: 'primary.main', fontWeight: 800 }}>{data?.summary?.total || 0}</Typography>
             <Typography variant="caption" color="text.secondary">Total Assessments</Typography>
           </CardContent></Card>
         </Grid>
         <Grid item xs={6} sm={3}>
           <Card><CardContent sx={{ textAlign: 'center', py: 3 }}>
-            <ConfirmIcon sx={{ fontSize: 28, color: '#2e7d32', mb: 1 }} />
-            <Typography variant="h4" sx={{ color: '#2e7d32', fontWeight: 800 }}>{data?.summary?.confirmed || 0}</Typography>
+            <ConfirmIcon sx={{ fontSize: 28, color: 'success.main', mb: 1 }} />
+            <Typography variant="h4" sx={{ color: 'success.main', fontWeight: 800 }}>{data?.summary?.confirmed || 0}</Typography>
             <Typography variant="caption" color="text.secondary">Confirmed</Typography>
           </CardContent></Card>
         </Grid>
         <Grid item xs={6} sm={3}>
           <Card><CardContent sx={{ textAlign: 'center', py: 3 }}>
-            <OverrideIcon sx={{ fontSize: 28, color: '#ef6c00', mb: 1 }} />
-            <Typography variant="h4" sx={{ color: '#ef6c00', fontWeight: 800 }}>{data?.summary?.overridden || 0}</Typography>
+            <OverrideIcon sx={{ fontSize: 28, color: 'warning.main', mb: 1 }} />
+            <Typography variant="h4" sx={{ color: 'warning.main', fontWeight: 800 }}>{data?.summary?.overridden || 0}</Typography>
             <Typography variant="caption" color="text.secondary">Overrides</Typography>
           </CardContent></Card>
         </Grid>
         <Grid item xs={6} sm={3}>
           <Card><CardContent sx={{ textAlign: 'center', py: 3 }}>
-            <PendingIcon sx={{ fontSize: 28, color: '#c62828', mb: 1 }} />
-            <Typography variant="h4" sx={{ color: '#c62828', fontWeight: 800 }}>{data?.summary?.pending || 0}</Typography>
+            <PendingIcon sx={{ fontSize: 28, color: 'error.main', mb: 1 }} />
+            <Typography variant="h4" sx={{ color: 'error.main', fontWeight: 800 }}>{data?.summary?.pending || 0}</Typography>
             <Typography variant="caption" color="text.secondary">Pending</Typography>
           </CardContent></Card>
         </Grid>
@@ -107,7 +116,7 @@ const ShiftHandover = () => {
             <CardContent>
               <Typography variant="h6" sx={{ mb: 2 }}>Override Rate</Typography>
               <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
-                <TrendIcon sx={{ fontSize: 40, color: '#ef6c00' }} />
+                <TrendIcon sx={{ fontSize: 40, color: 'warning.main' }} />
                 <Box>
                   <Typography variant="h3" fontWeight={800}>
                     {data?.summary?.total > 0 ? Math.round((data.summary.overridden / data.summary.total) * 100) : 0}%
