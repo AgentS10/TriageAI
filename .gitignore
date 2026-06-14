@@ -72,3 +72,6 @@ mlartifacts/
 
 # Jupyter
 .ipynb_checkpoints/
+
+# Academic deliverables (local copies — not versioned)
+Phase_1_Deliverables/
